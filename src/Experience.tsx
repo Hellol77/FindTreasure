@@ -10,6 +10,8 @@ export default function Experience() {
         minDistance={5}
         maxDistance={8}
         enablePan={false}
+        minPolarAngle={Math.PI / 3} // 상하 이동 제한
+        maxPolarAngle={Math.PI / 3}
       />
       {/* <ambientLight intensity={0.2} /> */}
       <directionalLight
