@@ -88,7 +88,7 @@ export default function Character(props: JSX.IntrinsicElements["group"]) {
     });
   }, [nodes]);
 
-  useUpdateFrame(actions);
+  useUpdateFrame(actions, refModel);
   return (
     <>
       <RigidBody colliders={false} position={[0, 2, 0]}>

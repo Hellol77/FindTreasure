@@ -5,7 +5,12 @@ import { Physics, RigidBody } from "@react-three/rapier";
 export default function Experience() {
   return (
     <>
-      <OrbitControls makeDefault enablePan={false} />
+      <OrbitControls
+        enableZoom
+        minDistance={5}
+        maxDistance={8}
+        enablePan={false}
+      />
       {/* <ambientLight intensity={0.2} /> */}
       <directionalLight
         position={[0, 3, 5]}
