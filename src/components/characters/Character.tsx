@@ -4,12 +4,19 @@ Command: npx gltfjsx@6.2.18 ./public/character1.glb -o ./src/components/Characte
 */
 
 import * as THREE from "three";
-import { useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
 import { useControls } from "leva";
-import { CapsuleCollider, RigidBody } from "@react-three/rapier";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+
+import {
+  CapsuleCollider,
+  RigidBody,
+  RapierRigidBody,
+} from "@react-three/rapier";
 import useUpdateFrame from "./hooks/useUpdateFrame";
+import { GroupProps } from "@react-three/fiber";
 
 export const CHARACTER_HEIGHT = 1.8;
 export const CAPSULE_RADIUS = 0.3;
@@ -44,10 +51,19 @@ export type ActionName = "idle" | "run";
 interface GLTFAction extends THREE.AnimationClip {
   name: ActionName;
 }
-// type ContextType = Record<string, React.ForwardRefExoticComponent<JSX.IntrinsicElements['skinnedMesh'] | JSX.IntrinsicElements['bone']>>
+// // type ContextType = Record<string, React.ForwardRefExoticComponent<JSX.IntrinsicElements['skinnedMesh'] | JSX.IntrinsicElements['bone']>>
+// type CharacterProps = {
+//   refOrbitControls: RefObject<OrbitControlsImpl>;
 
-export default function Character(props: JSX.IntrinsicElements["group"]) {
+interface CharacterProps extends GroupProps {
+  refOrbitControls: RefObject<OrbitControlsImpl>;
+}
+export default function Character({
+  refOrbitControls,
+  ...props
+}: CharacterProps) {
   const refModel = useRef<THREE.Group>(null!);
+  const refRigid = useRef<RapierRigidBody>(null);
   const { nodes, materials, animations } = useGLTF(
     "/character1.glb"
   ) as GLTFResult;
@@ -88,10 +104,14 @@ export default function Character(props: JSX.IntrinsicElements["group"]) {
     });
   }, [nodes]);
 
-  useUpdateFrame(actions, refModel);
+  useEffect(() => {
+    refRigid.current?.lockRotations(true, false);
+  }, []);
+
+  useUpdateFrame(actions, refModel, refRigid, refOrbitControls);
   return (
     <>
-      <RigidBody colliders={false} position={[0, 2, 0]}>
+      <RigidBody colliders={false} position={[0, 2, 0]} ref={refRigid}>
         <CapsuleCollider
           args={[CHARACTER_HEIGHT / 2 - CAPSULE_RADIUS, CAPSULE_RADIUS]}
         />

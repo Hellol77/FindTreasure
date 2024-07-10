@@ -1,11 +1,16 @@
 import { OrbitControls } from "@react-three/drei";
 import Character from "./components/characters/Character";
 import { Physics, RigidBody } from "@react-three/rapier";
+import * as THREE from "three";
+import { useRef } from "react";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 export default function Experience() {
+  const refOrbitControls = useRef<OrbitControlsImpl>(null);
   return (
     <>
       <OrbitControls
+        ref={refOrbitControls}
         enableZoom
         minDistance={5}
         maxDistance={8}
@@ -29,12 +34,16 @@ export default function Experience() {
 
       <Physics debug>
         <RigidBody type="fixed">
-          <mesh position-y={-0.05} receiveShadow={true}>
-            <boxGeometry args={[100, 0.1, 100]} />
+          <mesh
+            receiveShadow
+            rotation-x={THREE.MathUtils.degToRad(-90)}
+            scale={100}
+          >
+            <planeGeometry />
             <meshStandardMaterial color="#5d6d72" />
           </mesh>
         </RigidBody>
-        <Character />
+        <Character refOrbitControls={refOrbitControls} />
       </Physics>
     </>
   );
