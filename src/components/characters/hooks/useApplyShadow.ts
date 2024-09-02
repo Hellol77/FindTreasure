@@ -8,7 +8,7 @@ export default function useApplyShadow({
 }) {
   useEffect(() => {
     refTarget.current.traverse((object) => {
-      if (object instanceof THREE.Mesh) {
+      if (object) {
         object.castShadow = true;
         object.receiveShadow = true;
       }

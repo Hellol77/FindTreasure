@@ -10,13 +10,10 @@ import { GLTF } from "three-stdlib";
 import { useControls } from "leva";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
-import {
-  CapsuleCollider,
-  RigidBody,
-  RapierRigidBody,
-} from "@react-three/rapier";
+import { CapsuleCollider, RigidBody, RapierRigidBody } from "@react-three/rapier";
 import useUpdateFrame from "./hooks/useUpdateFrame";
 import { GroupProps } from "@react-three/fiber";
+import useApplyShadow from "./hooks/useApplyShadow";
 
 export const CHARACTER_HEIGHT = 1.8;
 export const CAPSULE_RADIUS = 0.3;
@@ -57,16 +54,11 @@ interface GLTFAction extends THREE.AnimationClip {
 
 interface CharacterProps extends GroupProps {
   refOrbitControls: RefObject<OrbitControlsImpl>;
+  refRigid: RefObject<RapierRigidBody>;
 }
-export default function Character({
-  refOrbitControls,
-  ...props
-}: CharacterProps) {
+export default function Character({ refOrbitControls, refRigid, ...props }: CharacterProps) {
   const refModel = useRef<THREE.Group>(null!);
-  const refRigid = useRef<RapierRigidBody>(null);
-  const { nodes, materials, animations } = useGLTF(
-    "/character1.glb"
-  ) as GLTFResult;
+  const { nodes, materials, animations } = useGLTF("/character1.glb") as GLTFResult;
   const { actions } = useAnimations(animations, refModel);
 
   const animationNames = Object.keys(actions);
@@ -106,27 +98,17 @@ export default function Character({
 
   useEffect(() => {
     refRigid.current?.lockRotations(true, false);
-  }, []);
+  }, [refRigid]);
 
   useUpdateFrame(actions, refModel, refRigid, refOrbitControls);
+  useApplyShadow({ refTarget: refModel });
   return (
     <>
       <RigidBody colliders={false} position={[0, 2, 0]} ref={refRigid}>
-        <CapsuleCollider
-          args={[CHARACTER_HEIGHT / 2 - CAPSULE_RADIUS, CAPSULE_RADIUS]}
-        />
-        <group
-          ref={refModel}
-          {...props}
-          dispose={null}
-          position-y={-CHARACTER_HEIGHT / 2}
-        >
+        <CapsuleCollider args={[CHARACTER_HEIGHT / 2 - CAPSULE_RADIUS, CAPSULE_RADIUS]} />
+        <group ref={refModel} {...props} dispose={null} position-y={-CHARACTER_HEIGHT / 2}>
           <group name="Scene">
-            <group
-              name="Armature001"
-              rotation={[Math.PI / 2, 0, 0]}
-              scale={0.01}
-            >
+            <group name="Armature001" rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
               <primitive object={nodes.mixamorigHips} />
               <skinnedMesh
                 name="EyeLeft001"

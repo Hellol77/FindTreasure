@@ -13,7 +13,7 @@ function App() {
           { name: "rightward", keys: ["ArrowRight", "KeyD"] },
         ]}
       >
-        <Canvas>
+        <Canvas shadows>
           <Experience />
         </Canvas>
       </KeyboardControls>
