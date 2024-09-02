@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { RapierRigidBody } from "@react-three/rapier";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
-export const RUN_SPEED = 1;
+export const RUN_SPEED = 3;
 
 export default function useUpdateFrame(
   actions: {
@@ -64,6 +64,7 @@ export default function useUpdateFrame(
 
   useFrame((state, delta) => {
     const keys = getKeys();
+
     console.log(keys);
 
     const camera = state.camera;
@@ -72,30 +73,28 @@ export default function useUpdateFrame(
     const modelPosition = new THREE.Vector3();
     model?.getWorldPosition(modelPosition);
 
+    if (keys.forward || keys.backward || keys.leftward || keys.rightward) {
+      playAction("run");
+      refSpeed.current = RUN_SPEED;
+    } else {
+      playAction("idle");
+      refSpeed.current = 0;
+    }
+
     const angleCameraDirectionAxisY =
-      Math.atan2(
-        camera.position.x - modelPosition.x,
-        camera.position.z - modelPosition.z
-      ) + Math.PI;
+      Math.atan2(camera.position.x - modelPosition.x, camera.position.z - modelPosition.z) +
+      Math.PI +
+      getDirectionOffset(keys);
 
     const rotateQuaternion = new THREE.Quaternion();
-    rotateQuaternion.setFromAxisAngle(
-      new THREE.Vector3(0, 1, 0),
-      angleCameraDirectionAxisY + getDirectionOffset(keys)
-    );
-    model.quaternion.rotateTowards(
-      rotateQuaternion,
-      THREE.MathUtils.degToRad(5)
-    );
+    rotateQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), angleCameraDirectionAxisY);
+    model.quaternion.rotateTowards(rotateQuaternion, THREE.MathUtils.degToRad(5));
 
     const walkDirection = new THREE.Vector3();
     camera.getWorldDirection(walkDirection);
     walkDirection.y = 0;
     walkDirection.normalize();
-    walkDirection.applyAxisAngle(
-      new THREE.Vector3(0, 1, 0),
-      angleCameraDirectionAxisY + getDirectionOffset(keys)
-    );
+    walkDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), getDirectionOffset(keys));
     const dx = walkDirection.x * (refSpeed.current * delta);
     const dz = walkDirection.z * (refSpeed.current * delta);
 
@@ -103,20 +102,13 @@ export default function useUpdateFrame(
       const cx = refRigid.current.translation().x + dx;
       const cy = refRigid.current.translation().y;
       const cz = refRigid.current.translation().z + dz;
-      refRigid.current.setTranslation({ x: cx, y: cy, z: cz }, false);
+      refRigid.current.setTranslation({ x: cx, y: cy, z: cz }, true);
 
       camera.position.x += dx;
       camera.position.z += dz;
       if (refOrbitControls.current) {
         refOrbitControls.current.target.set(cx, cy, cz);
       }
-    }
-    if (keys.forward || keys.backward || keys.left || keys.right) {
-      playAction("run");
-      refSpeed.current = RUN_SPEED;
-    } else {
-      playAction("idle");
-      refSpeed.current = 0;
     }
   });
 }
