@@ -1,4 +1,4 @@
-import { KeyboardControls } from "@react-three/drei";
+import { KeyboardControls, Loader } from "@react-three/drei";
 import "./App.css";
 import Experience from "./Experience";
 import { Canvas } from "@react-three/fiber";
@@ -16,6 +16,7 @@ function App() {
         <Canvas shadows>
           <Experience />
         </Canvas>
+        <Loader />
       </KeyboardControls>
     </>
   );

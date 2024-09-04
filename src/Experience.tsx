@@ -7,7 +7,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useThree } from "@react-three/fiber";
 import { Perf } from "r3f-perf";
 import useFollewShadowLight from "./hooks/useFollewShadowLight";
-
+import { Model as Stage } from "./Stage";
 export default function Experience() {
   const refOrbitControls = useRef<OrbitControlsImpl>(null);
   const refLight = useRef<THREE.DirectionalLight>(null!);
@@ -59,13 +59,11 @@ export default function Experience() {
       />
       <Environment preset="city" />
       <Sky />
-      <Physics debug>
-        <RigidBody type="fixed">
-          <mesh receiveShadow rotation-x={THREE.MathUtils.degToRad(-90)} scale={100}>
-            <planeGeometry args={[10, 10]} />
-            <meshStandardMaterial color="#5d6d72" />
-          </mesh>
+      <Physics>
+        <RigidBody type="fixed" colliders="trimesh">
+          <Stage />
         </RigidBody>
+
         <Character refRigid={refRigid} refOrbitControls={refOrbitControls} />
       </Physics>
     </>
